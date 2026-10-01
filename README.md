@@ -21,7 +21,7 @@ This is a 4-week Software Engineering project focused on building a robust, prod
 
 ## Current Status
 
-**Week 1 — Scope Definition & Baseline Analysis**
+**Week 2 — Framework & Workflow Design (Deliverables Complete — Ready for Week 3 Execution)**
 
 ---
 
@@ -31,13 +31,17 @@ This is a 4-week Software Engineering project focused on building a robust, prod
 Full-Stack-CRUD-Project/
 │
 ├── documentation/
-│   ├── baseline-audit.md       # Audit of baseline tools, domain workflows, and technical feasibility
-│   ├── project-charter.md      # Project objectives, scope boundary, milestones, and governance
-│   ├── kpi-document.md         # Key Performance Indicators (KPIs) and OKRs across 4 weeks
-│   ├── market-research.md      # Desk research, requirements analysis, and MoSCoW prioritization
-│   └── project-dashboard.md    # Master tracking sheet, deliverables register, and review tracker
+│   ├── baseline-audit.md          # Week 1: Audit of baseline tools, domain workflows, and technical feasibility
+│   ├── project-charter.md         # Week 1: Project objectives, scope boundary, milestones, and governance
+│   ├── kpi-document.md            # Week 1: Key Performance Indicators (KPIs) and OKRs across 4 weeks
+│   ├── market-research.md         # Week 1: Desk research, requirements analysis, and MoSCoW prioritization
+│   ├── project-dashboard.md       # Master tracking sheet, deliverables register, and review tracker
+│   ├── week-2-framework-plan.md   # Week 2: Technical framework plan, entity models, and workflow specifications
+│   ├── framework-draft.md         # Week 2: Core technical framework draft and operational architecture
+│   ├── templates-guidelines.md    # Week 2: Standardized templates, coding guidelines, and testing formats
+│   └── test-scenario-log.md       # Week 2: Mid-stage test scenario log (20 scenarios: Not Yet Executed)
 │
-├── research/                   # Working directory for raw research data, interviews, and notes
+├── research/                      # Working directory for raw research data, interviews, and notes
 │
-└── README.md                   # Project overview, tech stack, roadmap, and tracking
+└── README.md                      # Project overview, tech stack, roadmap, and tracking
 ```
