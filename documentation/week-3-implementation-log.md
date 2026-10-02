@@ -322,11 +322,105 @@ Row Level Security is enabled (`ALTER TABLE public.tasks ENABLE ROW LEVEL SECURI
 
 ---
 
-## 11. Exact Next Week 3 Step
+## 11. Step 4 Execution: Frontend Task Management Integration
 
-**Step 4: Frontend Task Management Integration**
-1. Implement TypeScript API client service (`frontend/src/services/taskApi.ts`) communicating with the Express backend using Bearer tokens.
-2. Implement task state management, responsive UI components (task card, task list, filter toolbar, creation modal/drawer), and loading/empty/error states.
-3. Integrate authentication session state and token passing.
-4. Execute end-to-end integration and responsive UI checks.
+### 11.1 Frontend Architecture & Component Hierarchy
+To integrate frontend Task Management with the existing Express backend (`/api/v1/tasks`), the frontend architecture was expanded with a clean separation of concerns:
+
+```text
+frontend/src/
+├── app/
+│   ├── globals.css              # TailwindCSS directives
+│   ├── layout.tsx               # Root HTML structure and metadata
+│   └── page.tsx                 # HomePage mounting Navigation, Milestone Ribbon & TaskList
+├── components/
+│   └── tasks/
+│       ├── TaskCard.tsx         # Individual task card with status/priority badges & action buttons
+│       ├── TaskFilters.tsx      # Responsive toolbar for status and priority query filtering
+│       ├── TaskModal.tsx        # Modal dialog supporting Task Creation and Task Editing
+│       └── TaskList.tsx         # Main container orchestrating state, fetching, errors, and empty views
+├── lib/
+│   ├── supabaseClient.ts        # Browser Supabase client instance & config detection
+│   └── useAuth.ts               # React hook subscribing to Supabase session & access tokens
+├── services/
+│   └── taskApi.ts               # REST API client interacting exclusively with Express backend
+└── types/
+    └── task.ts                  # Shared TypeScript interfaces (TaskRecord, Payloads, Filters)
+```
+
+### 11.2 API Client Implementation (`frontend/src/services/taskApi.ts`)
+- **Backend Communication:** Interacts exclusively with `/api/v1/tasks` using base URL from `process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'`.
+- **Zero Database Bypass:** No direct browser-to-database connections are made for task CRUD operations.
+- **Typed Functions:**
+  - `taskApi.getTasks(filter?: TaskFilter, token?: string)`: Appends `status` and `priority` query parameters (omitting `'all'`).
+  - `taskApi.getTaskById(id: string, token?: string)`: Retrieves single task by UUID.
+  - `taskApi.createTask(payload: CreateTaskPayload, token?: string)`: Sends JSON body with required `title` and optional metadata.
+  - `taskApi.updateTask(id: string, payload: UpdateTaskPayload, token?: string)`: Sends partial update payload.
+  - `taskApi.deleteTask(id: string, token?: string)`: Sends DELETE request for specified task UUID.
+- **Security Invariant:** The client payload never includes or accepts `user_id`. Identity is inferred exclusively from the Bearer token by the backend.
+- **Error Handling:** Standardized via `ApiClientError` class:
+  - Parses backend `ApiResponse<T>` JSON envelope.
+  - Captures status code, error code (e.g. `VALIDATION_ERROR`, `UNAUTHORIZED`, `TASK_NOT_FOUND`, `SERVICE_UNAVAILABLE`).
+  - Translates network/connection dropouts into user-friendly `NETWORK_UNAVAILABLE` messages without exposing stack traces.
+
+### 11.3 Authentication Session Integration (`frontend/src/lib/useAuth.ts`)
+- Utilizes the existing Supabase frontend client (`supabaseClient.ts`).
+- Subscribes in real-time to auth state transitions via `supabase.auth.getSession()` and `supabase.auth.onAuthStateChange()`.
+- Extracts `session.access_token` and attaches it as `Authorization: Bearer <access_token>` in API calls.
+- Gated state detection:
+  - If `isSupabaseConfigured() === false`, flags `isConfigured: false` without crashing.
+  - If no active session exists, flags `isAuthenticated: false` and renders an unauthenticated state rather than inventing a mock user or fake login.
+
+### 11.4 Task UI Components & Features
+1. **Task Card (`TaskCard.tsx`):**
+   - Renders task title, description (with line clamping), and due date.
+   - Status badge with semantic color schemes: Pending (Amber), In Progress (Blue), Completed (Emerald).
+   - Priority badge: Low (Slate), Medium (Sky), High (Orange), Urgent (Rose).
+   - Formatted creation timestamp.
+   - Accessible Edit and Delete buttons.
+2. **Filter Toolbar (`TaskFilters.tsx`):**
+   - Status dropdown: `All Statuses`, `Pending`, `In Progress`, `Completed`.
+   - Priority dropdown: `All Priorities`, `Low`, `Medium`, `High`, `Urgent`.
+   - Reset Filters button when active filter criteria are selected.
+   - Triggers server-side query re-fetch on the Express backend.
+3. **Task Modal (`TaskModal.tsx`):**
+   - Unified modal dialog for Create and Edit workflows.
+   - Client-side validation:
+     - Title is mandatory, trimmed, non-whitespace, max 255 characters.
+     - Description max 2000 characters.
+     - ISO 8601 due date format parsing.
+   - Disallows editing `id`, `user_id`, or `created_at`.
+   - Displays inline validation error banners and loading state (`Saving...`).
+4. **Task List Container (`TaskList.tsx`):**
+   - Orchestrates task state, filtering, modal transitions, and deletion confirmations.
+   - Confirmation prompt (`window.confirm`) prior to deleting any task.
+   - Refreshes backend data automatically following successful task mutations.
+
+### 11.5 Loading, Empty, and Error State Handling
+- **Loading State:** Centered animated SVG spinner with accessible `aria-live="polite"` announcements during initial load and filter updates.
+- **Empty State:** Displays exact message: `"No tasks yet. Create your first task."` with an action button to open the creation modal. Zero fake or sample tasks are inserted.
+- **Error State:** Dismissible error banner displaying actionable guidance for HTTP 401 (session expired), HTTP 400 (validation failure), HTTP 404 (task not found), HTTP 500 (internal error), and HTTP 503 / Network Unavailable.
+- **Unconfigured State:** Explains that Supabase credentials must be configured in environment variables to enable authentication.
+- **Unauthenticated State:** Explains that personal task access requires an active authenticated session, upholding academic and security integrity.
+
+### 11.6 Verification & Build Results
+
+| Verification Action | Command | Result | Notes |
+| :--- | :--- | :--- | :--- |
+| **Frontend Production Build** | `npm run build` in `frontend/` | **PASS (Exit code 0)** | Compiled via Next.js 14, type-checked, 4/4 static pages generated cleanly |
+| **Backend TypeScript Build** | `npm run build` in `backend/` | **PASS (Exit code 0)** | Compiled via `tsc` to `dist/` |
+| **Backend Automated Tests** | `npm test` in `backend/` | **PASS (Exit code 0)** | 20 passed, 1 skipped (live Supabase integration test pending live credentials) |
+| **Standalone Health Check** | `GET /api/v1/health` | **PASS (HTTP 200)** | Verified on running Express server: `{ "success": true, "data": { "status": "healthy" } }` |
+| **Live Database Queries** | Live cloud PostgreSQL access | **PENDING LIVE CREDENTIALS** | Blocked until user configures real Supabase credentials in `.env` |
+| **Manual Browser Testing** | End-to-end interactive user session | **NOT YET PERFORMED** | Requires browser runtime with active Supabase session |
+
+---
+
+## 12. Exact Next Recommended Week 3 Step
+
+**Step 5: Frontend Authentication UI & Auth Flow Integration**
+1. Implement client authentication UI (Sign In and Sign Up modal/page) using Supabase Auth client (`supabase.auth.signUp`, `supabase.auth.signInWithPassword`, `supabase.auth.signOut`).
+2. Integrate auth session persistence, login/logout controls in the header, and automated token passing to `TaskList`.
+3. Provide end-to-end test instructions for live Supabase credentials configuration and end-to-end task verification.
+
 
