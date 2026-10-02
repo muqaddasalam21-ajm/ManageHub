@@ -21,7 +21,7 @@ This is a 4-week Software Engineering project focused on building a robust, prod
 
 ## Current Status
 
-**Week 2 — Framework & Workflow Design (Deliverables Complete — Ready for Week 3 Execution)**
+**Week 3 — Execution & Tool Integration (Foundation Initialized & Verified)**
 
 ---
 
@@ -29,6 +29,10 @@ This is a 4-week Software Engineering project focused on building a robust, prod
 
 ```text
 Full-Stack-CRUD-Project/
+│
+├── frontend/                      # Next.js 14+ / React / TailwindCSS / TypeScript client
+├── backend/                       # Node.js / Express / TypeScript REST API server
+├── supabase/                      # Supabase database migrations and schemas
 │
 ├── documentation/
 │   ├── baseline-audit.md          # Week 1: Audit of baseline tools, domain workflows, and technical feasibility
@@ -39,7 +43,8 @@ Full-Stack-CRUD-Project/
 │   ├── week-2-framework-plan.md   # Week 2: Technical framework plan, entity models, and workflow specifications
 │   ├── framework-draft.md         # Week 2: Core technical framework draft and operational architecture
 │   ├── templates-guidelines.md    # Week 2: Standardized templates, coding guidelines, and testing formats
-│   └── test-scenario-log.md       # Week 2: Mid-stage test scenario log (20 scenarios: Not Yet Executed)
+│   ├── test-scenario-log.md       # Week 2: Mid-stage test scenario log (20 scenarios: Not Yet Executed)
+│   └── week-3-implementation-log.md # Week 3: Foundation setup and health verification log
 │
 ├── research/                      # Working directory for raw research data, interviews, and notes
 │
